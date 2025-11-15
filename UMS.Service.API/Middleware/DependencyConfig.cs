@@ -49,11 +49,14 @@ namespace UMS.Service.API.Middleware
         }
         public static void AddServices(this IServiceCollection services)
         {
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IJwtService, JwtService>();
+
         }
         public static void AddRepositories(this IServiceCollection services)
         {
+            services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
         }
         public static void AddInfrastructure(this IServiceCollection services,IConfiguration configuration)
