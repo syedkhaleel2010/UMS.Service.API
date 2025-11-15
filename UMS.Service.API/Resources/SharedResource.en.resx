@@ -118,6 +118,93 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WelcomeMessage" xml:space="preserve">
-    <value>english</value>
+    <value>Welcome</value>
+  </data>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Validation failed.</value>
+  </data>
+  <data name="ProcessingRequestFailed" xml:space="preserve">
+    <value>Processing request failed.</value>
+  </data>
+  <data name="PleaseCheckInput" xml:space="preserve">
+    <value>Please check the input and try again</value>
+  </data>
+  <data name="UsernameAlreadyExists" xml:space="preserve">
+    <value>Username already exists</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="UserCreatedSuccessfully" xml:space="preserve">
+    <value>User created successfully</value>
+  </data>
+  <data name="UserUpdatedSuccessfully" xml:space="preserve">
+    <value>User updated successfully</value>
+  </data>
+  <data name="UserDeletedSuccessfully" xml:space="preserve">
+    <value>User deleted successfully</value>
+  </data>
+  <data name="PasswordResetSuccessfully" xml:space="preserve">
+    <value>Password reset successfully!</value>
+  </data>
+  <data name="TokenRequired" xml:space="preserve">
+    <value>Token is required</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid token</value>
+  </data>
+  <data name="PleaseLoginAgain" xml:space="preserve">
+    <value>Please login again to get a new token</value>
+  </data>
+  <data name="RoleDataIsNull" xml:space="preserve">
+    <value>Role data is null.</value>
+  </data>
+  <data name="RoleCreated" xml:space="preserve">
+    <value>{0} Role created</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+  <data name="UserRoleDataIsNull" xml:space="preserve">
+    <value>UserRole data is null.</value>
+  </data>
+  <data name="RoleAssignedToUser" xml:space="preserve">
+    <value>Role Assigned to User</value>
+  </data>
+  <data name="UnauthorizedAccess" xml:space="preserve">
+    <value>Unauthorized access. Please check your credentials.</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>The requested resource was not found.</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Invalid request.</value>
+  </data>
+  <data name="InvalidHttpRequest" xml:space="preserve">
+    <value>Invalid HTTP request.</value>
+  </data>
+  <data name="RequestTimedOut" xml:space="preserve">
+    <value>The request timed out. Please try again.</value>
+  </data>
+  <data name="RecordAlreadyExists" xml:space="preserve">
+    <value>A record with this information already exists.</value>
+  </data>
+  <data name="DatabaseConstraintViolation" xml:space="preserve">
+    <value>The operation violates a database constraint.</value>
+  </data>
+  <data name="DatabaseError" xml:space="preserve">
+    <value>A database error occurred while processing your request.</value>
+  </data>
+  <data name="ErrorOccurredProcessingRequest" xml:space="preserve">
+    <value>An error occurred while processing your request. Please try again later.</value>
+  </data>
+  <data name="AuthenticationRequired" xml:space="preserve">
+    <value>Authentication required. Please provide a valid token.</value>
+  </data>
+  <data name="AccessDeniedRoles" xml:space="preserve">
+    <value>Access denied. This operation requires one of the following roles: {0}.</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Access denied. You do not have permission to access this resource.</value>
   </data>
 </root>

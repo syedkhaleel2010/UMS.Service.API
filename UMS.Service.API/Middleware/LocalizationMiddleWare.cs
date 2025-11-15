@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using Microsoft.AspNetCore.Localization;
+﻿using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 namespace UMS.Service.API.Middleware
 {
@@ -15,21 +15,27 @@ namespace UMS.Service.API.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-           
-            var langHeader = context.Request.Headers["language"].ToString();
-
-           
             var culture = "en";
 
-            if (!string.IsNullOrEmpty(langHeader) &&
-                SupportedLanguages.Contains(langHeader))
+            // Check query string first (e.g., ?culture=ar)
+            var cultureQuery = context.Request.Query["culture"].ToString();
+            if (!string.IsNullOrEmpty(cultureQuery) && SupportedLanguages.Contains(cultureQuery))
             {
-                culture = langHeader;
+                culture = cultureQuery;
+            }
+            else
+            {
+                // Check header (e.g., language: ar)
+                var langHeader = context.Request.Headers["language"].ToString();
+                if (!string.IsNullOrEmpty(langHeader) && SupportedLanguages.Contains(langHeader))
+                {
+                    culture = langHeader;
+                }
             }
 
             var ci = new CultureInfo(culture);
 
-            // Apply culture for current request
+            // Set the culture for the current request using Thread.CurrentThread
             CultureInfo.CurrentCulture = ci;
             CultureInfo.CurrentUICulture = ci;
 
@@ -37,7 +43,6 @@ namespace UMS.Service.API.Middleware
         }
     }
 
-    
     public static class LocalizationMiddlewareExtensions
     {
         public static IApplicationBuilder UseCustomLocalization(this IApplicationBuilder app)

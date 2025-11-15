@@ -50,6 +50,7 @@ namespace UMS.Service.API.Middleware
         public static void AddServices(this IServiceCollection services)
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped(typeof(IUnitOfWork), typeof(UnitOfWork));
             services.AddScoped<IUserSession, UserSession>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRoleService, RoleService>();
@@ -59,10 +60,11 @@ namespace UMS.Service.API.Middleware
         {
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserPasswordHistoryrRepository, UserPasswordHistoryrRepository>();
         }
         public static void AddInfrastructure(this IServiceCollection services,IConfiguration configuration)
         {
-            var connectionstring = configuration.GetConnectionString("DefaultConnection");
+            var connectionstring = configuration.GetConnectionString("UMSDbConnection");
             services.AddDbContext<UMSDbContext>(options =>
             {
                 options.UseSqlServer(connectionstring);

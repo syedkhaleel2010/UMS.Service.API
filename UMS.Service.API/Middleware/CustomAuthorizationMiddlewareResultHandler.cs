@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Localization;
 using System.Net;
 using System.Text.Json;
 using UMS.Service.API.Common;
@@ -29,7 +30,9 @@ namespace UMS.Service.API.Middleware
             if (authorizeResult.Challenged)
             {
                 // 401 Unauthorized - Authentication required
-                await HandleUnauthorizedAsync(context, "Authentication required. Please provide a valid token.");
+                var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResource>>();
+                var message = localizer?["AuthenticationRequired"]?.ToString() ?? "Authentication required. Please provide a valid token.";
+                await HandleUnauthorizedAsync(context, message);
                 return;
             }
 
@@ -47,6 +50,8 @@ namespace UMS.Service.API.Middleware
 
         private static string GetForbiddenMessage(HttpContext context, AuthorizationPolicy policy)
         {
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResource>>();
+            
             // Check if it's a role-based authorization
             var roleRequirement = policy.Requirements
                 .OfType<RolesAuthorizationRequirement>()
@@ -55,12 +60,12 @@ namespace UMS.Service.API.Middleware
             if (roleRequirement != null && roleRequirement.AllowedRoles.Any())
             {
                 var roles = string.Join(" or ", roleRequirement.AllowedRoles);
-                return $"Access denied. This operation requires one of the following roles: {roles}.";
+                return string.Format(localizer?["AccessDeniedRoles"]?.ToString() ?? "Access denied. This operation requires one of the following roles: {0}.", roles);
             }
 
            
             // Generic forbidden message
-            return "Access denied. You do not have permission to access this resource.";
+            return localizer?["AccessDenied"]?.ToString() ?? "Access denied. You do not have permission to access this resource.";
         }
 
         private static async Task HandleUnauthorizedAsync(HttpContext context, string message)

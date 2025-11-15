@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Serilog;
 using UMS.Core.AutoMapper;
 using UMS.Core.Dto;
@@ -55,6 +56,14 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SetDefaultCulture("en");
     options.AddSupportedCultures(supportedCultures);
     options.AddSupportedUICultures(supportedCultures);
+    
+    // Configure culture providers - query string has highest priority
+    options.RequestCultureProviders.Clear();
+   
+    // No other changes are needed as the HeaderRequestCultureProvider is part of the Microsoft.AspNetCore.Localization.Routing namespace.
+    options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider());
+    // No other changes are needed as the HeaderRequestCultureProvider is part of the Microsoft.AspNetCore.Localization.Routing namespace.
+    
 });
 
     builder.Services.AddCors(options =>
@@ -84,10 +93,13 @@ app.UseHttpsRedirection();
 // Global exception handling - should be early in pipeline to catch all exceptions
 app.UseGlobalExceptionHandling();
 
+// Use RequestLocalization middleware - reads from query string, header, etc.
+var localizationOptions = app.Services.GetService<Microsoft.Extensions.Options.IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(localizationOptions!.Value);
+
 // Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCustomLocalization();
 
 app.MapControllers();
 

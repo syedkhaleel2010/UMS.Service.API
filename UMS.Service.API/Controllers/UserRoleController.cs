@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using UMS.Core.Dto;
 using UMS.Service.Interfaces;
 
@@ -13,7 +14,7 @@ namespace UMS.Service.API.Controllers
     {
         private  readonly ILogger<UserRoleController> _logger;
         private  readonly IRoleService roleService;
-        public UserRoleController(ILogger<UserRoleController> logger,IRoleService roleService) : base(logger)
+        public UserRoleController(ILogger<UserRoleController> logger, IRoleService roleService, IStringLocalizer<SharedResource> localizer) : base(logger, localizer)
         {
             _logger = logger;
             this.roleService = roleService;
@@ -28,15 +29,15 @@ namespace UMS.Service.API.Controllers
             {
                 if (roleDto == null)
                 {
-                    return BadRequest("Role data is null.");
+                    return BadRequest(Localizer["RoleDataIsNull"].ToString());
                 }
                 var createdRole = await this.roleService.CreateRole(roleDto);
-                return OkServiceResponse(createdRole,$"{roleDto.RoleName} Role created");
+                return OkServiceResponse(createdRole, string.Format(Localizer["RoleCreated"].ToString(), roleDto.RoleName));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating role.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
+                return StatusCode(StatusCodes.Status500InternalServerError, Localizer["InternalServerError"].ToString());
             }
         }
 
@@ -48,15 +49,15 @@ namespace UMS.Service.API.Controllers
             {
                 if (userRoleDto == null)
                 {
-                    return BadRequest("UserRole data is null.");
+                    return BadRequest(Localizer["UserRoleDataIsNull"].ToString());
                 }
                 var assignedRole = await this.roleService.AssignRole(userRoleDto);
-                return OkServiceResponse(assignedRole,"Role Assigned to User");
+                return OkServiceResponse(assignedRole, Localizer["RoleAssignedToUser"].ToString());
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while assigning role.");
-                return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
+                return StatusCode(StatusCodes.Status500InternalServerError, Localizer["InternalServerError"].ToString());
             }
         }
     }

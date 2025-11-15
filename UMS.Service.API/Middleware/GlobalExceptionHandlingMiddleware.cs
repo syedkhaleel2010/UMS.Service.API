@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using System.Net;
 using System.Text.Json;
 using UMS.Service.API.Common;
@@ -44,13 +45,16 @@ namespace UMS.Service.API.Middleware
             context.Response.ContentType = "application/json";
             var response = context.Response;
 
+            // Get localizer from service provider
+            var localizer = context.RequestServices.GetService<IStringLocalizer<SharedResource>>();
+
             ServiceResponse<object> errorResponse;
 
             switch (exception)
             {
                 case ValidationException validationEx:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    errorResponse = ServiceResponse.ErrorResponse("Validation failed.");
+                    errorResponse = ServiceResponse.ErrorResponse(localizer?["ValidationFailed"]?.ToString() ?? "Validation failed.");
                     errorResponse.Errorlst = validationEx.Errors.Select(e => new ErrorMessage
                     {
                         Error = e.ErrorMessage,
@@ -60,7 +64,7 @@ namespace UMS.Service.API.Middleware
 
                 case UnauthorizedAccessException:
                     response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    errorResponse = ServiceResponse.ErrorResponse("Unauthorized access. Please check your credentials.");
+                    errorResponse = ServiceResponse.ErrorResponse(localizer?["UnauthorizedAccess"]?.ToString() ?? "Unauthorized access. Please check your credentials.");
                     break;
 
                 case KeyNotFoundException:
@@ -68,7 +72,7 @@ namespace UMS.Service.API.Middleware
                     response.StatusCode = (int)HttpStatusCode.NotFound;
                     errorResponse = ServiceResponse.ErrorResponse(
                         string.IsNullOrWhiteSpace(exception.Message) 
-                            ? "The requested resource was not found." 
+                            ? (localizer?["ResourceNotFound"]?.ToString() ?? "The requested resource was not found.")
                             : exception.Message);
                     break;
 
@@ -77,18 +81,18 @@ namespace UMS.Service.API.Middleware
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     errorResponse = ServiceResponse.ErrorResponse(
                         string.IsNullOrWhiteSpace(exception.Message) 
-                            ? "Invalid request." 
+                            ? (localizer?["InvalidRequest"]?.ToString() ?? "Invalid request.")
                             : exception.Message);
                     break;
 
                 case BadHttpRequestException:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    errorResponse = ServiceResponse.ErrorResponse("Invalid HTTP request.");
+                    errorResponse = ServiceResponse.ErrorResponse(localizer?["InvalidHttpRequest"]?.ToString() ?? "Invalid HTTP request.");
                     break;
 
                 case TimeoutException:
                     response.StatusCode = (int)HttpStatusCode.RequestTimeout;
-                    errorResponse = ServiceResponse.ErrorResponse("The request timed out. Please try again.");
+                    errorResponse = ServiceResponse.ErrorResponse(localizer?["RequestTimedOut"]?.ToString() ?? "The request timed out. Please try again.");
                     break;
 
                 case DbUpdateException dbEx:
@@ -99,15 +103,15 @@ namespace UMS.Service.API.Middleware
                     // Check for common database constraint violations
                     if (dbMessage.Contains("UNIQUE") || dbMessage.Contains("duplicate"))
                     {
-                        errorResponse = ServiceResponse.ErrorResponse("A record with this information already exists.");
+                        errorResponse = ServiceResponse.ErrorResponse(localizer?["RecordAlreadyExists"]?.ToString() ?? "A record with this information already exists.");
                     }
                     else if (dbMessage.Contains("FOREIGN KEY") || dbMessage.Contains("constraint"))
                     {
-                        errorResponse = ServiceResponse.ErrorResponse("The operation violates a database constraint.");
+                        errorResponse = ServiceResponse.ErrorResponse(localizer?["DatabaseConstraintViolation"]?.ToString() ?? "The operation violates a database constraint.");
                     }
                     else
                     {
-                        errorResponse = ServiceResponse.ErrorResponse("A database error occurred while processing your request.");
+                        errorResponse = ServiceResponse.ErrorResponse(localizer?["DatabaseError"]?.ToString() ?? "A database error occurred while processing your request.");
                     }
                     break;
 
@@ -121,7 +125,7 @@ namespace UMS.Service.API.Middleware
                     errorResponse = ServiceResponse.ErrorResponse(
                         isDevelopment 
                             ? exception.Message 
-                            : "An error occurred while processing your request. Please try again later.");
+                            : (localizer?["ErrorOccurredProcessingRequest"]?.ToString() ?? "An error occurred while processing your request. Please try again later."));
                     
                     if (isDevelopment)
                     {

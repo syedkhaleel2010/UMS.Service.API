@@ -21,7 +21,7 @@ namespace UMS.Service.API.Controllers
         {
             return Ok(new
             {
-                message = _localizer["WelcomeMessage"].ToString()
+                message = _localizer.GetString("WelcomeMessage").Value
             });
         }
     }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using UMS.Core.Dto;
 using UMS.Service.API.Common;
 using UMS.Service.API.Models;
@@ -20,7 +21,8 @@ public class AuthController : ServiceControllerBase
         IUserService userService,
         IJwtService jwtService,
         Microsoft.Extensions.Options.IOptions<JwtSettings> jwtSettings,
-        ILogger<AuthController> logger) : base(logger)
+        ILogger<AuthController> logger,
+        IStringLocalizer<SharedResource> localizer) : base(logger, localizer)
     {
         _userService = userService;
         _jwtService = jwtService;
@@ -34,28 +36,28 @@ public class AuthController : ServiceControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return BadRequestResponse("Please check the input and try again");
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
         }
 
         // Check if username already exists
         var existingUser = await _userService.GetUserByUsernameAsync(request.Username);
         if (existingUser != null)
         {
-            return BadRequestResponse("Username already exists");
+            return BadRequestResponse(Localizer["UsernameAlreadyExists"].ToString());
         }
 
         // Check if email already exists
         var existingEmail = await _userService.GetUserByEmailAsync(request.Email);
         if (existingEmail != null)
         {
-            return BadRequestResponse("Email already exists");
+            return BadRequestResponse(Localizer["EmailAlreadyExists"].ToString());
         }
 
         // Create user
         var user = await _userService.CreateUserAsync(request);
 
         
-        return OkServiceResponse(user,"User created successfully");
+        return OkServiceResponse(user, Localizer["UserCreatedSuccessfully"].ToString());
     }
 
     [Authorize(Roles = "Admin")]
@@ -63,7 +65,7 @@ public class AuthController : ServiceControllerBase
     public async Task<IActionResult> UpdateUserDetails([FromBody] RegisterUserDto request)
     {
         var user = await _userService.UpdateUserAsync(request);
-        return OkServiceResponse(user, "User updated successfully");
+        return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
     }
 
     [Authorize(Roles = "Admin")]
@@ -71,7 +73,7 @@ public class AuthController : ServiceControllerBase
     public async Task<IActionResult> deleteUser([FromBody] DeleteUserDto request)
     {
         var user = await _userService.DeleteUser(request);
-        return OkServiceResponse(user, "User deleted successfully");
+        return OkServiceResponse(user, Localizer["UserDeletedSuccessfully"].ToString());
     }
 
     [HttpPost]
@@ -81,7 +83,7 @@ public class AuthController : ServiceControllerBase
     {
         string user = User.Identity.Name;
             await _userService.ResetUserPassword(request, user);
-            return Ok(ServiceResponse.SuccessResponse("Password reset successfully!"));
+            return Ok(ServiceResponse.SuccessResponse(Localizer["PasswordResetSuccessfully"].ToString()));
     }
 
     [HttpPost("login")]
@@ -122,17 +124,17 @@ public class AuthController : ServiceControllerBase
     {
         if (string.IsNullOrEmpty(request.Token))
         {
-            return BadRequest(new { message = "Token is required" });
+            return BadRequest(new { message = Localizer["TokenRequired"].ToString() });
         }
 
         // Validate the token
         if (!_jwtService.ValidateToken(request.Token))
         {
-            return Unauthorized(new { message = "Invalid token" });
+            return Unauthorized(new { message = Localizer["InvalidToken"].ToString() });
         }
 
       
-        return BadRequest(new { message = "Please login again to get a new token" });
+        return BadRequest(new { message = Localizer["PleaseLoginAgain"].ToString() });
     }
 
     [HttpGet("me")]
