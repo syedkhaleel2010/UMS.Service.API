@@ -8,7 +8,7 @@ namespace UMS.Service.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : ServiceControllerBase
 {
     private readonly IUserService _userService;
     private readonly IJwtService _jwtService;
@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
         IUserService userService,
         IJwtService jwtService,
         Microsoft.Extensions.Options.IOptions<JwtSettings> jwtSettings,
-        ILogger<AuthController> logger)
+        ILogger<AuthController> logger) : base(logger)
     {
         _userService = userService;
         _jwtService = jwtService;
@@ -27,47 +27,34 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("register")]
-    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterUserDto request)
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            return BadRequestResponse("Please check the input and try again");
         }
 
         // Check if username already exists
         var existingUser = await _userService.GetUserByUsernameAsync(request.Username);
         if (existingUser != null)
         {
-            return BadRequest(new { message = "Username already exists" });
+            return BadRequestResponse("Username already exists");
         }
 
         // Check if email already exists
         var existingEmail = await _userService.GetUserByEmailAsync(request.Email);
         if (existingEmail != null)
         {
-            return BadRequest(new { message = "Email already exists" });
+            return BadRequestResponse("Email already exists");
         }
 
         // Create user
         var user = await _userService.CreateUserAsync(request);
 
-        // Generate token
-        var token = _jwtService.GenerateToken(user);
-        var refreshToken = _jwtService.GenerateRefreshToken();
-
-        var response = new AuthResponse
-        {
-            Token = token,
-            RefreshToken = refreshToken,
-            Expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
-            Username = user.Username,
-            Email = user.Email
-        };
-
-        _logger.LogInformation("User registered successfully: {Username}", user.Username);
-        return Ok(response);
+        
+        return OkServiceResponse(user,"User created successfully");
     }
 
     [HttpPost("login")]
@@ -93,9 +80,10 @@ public class AuthController : ControllerBase
             _logger.LogWarning("Login attempt with invalid password for user: {Username}", request.Username);
             return Unauthorized(new { message = "Invalid username or password" });
         }
+        var roles = user.UserRoles.Select(r => r.Role.RoleName).ToList();
 
         // Generate token
-        var token = _jwtService.GenerateToken(user);
+        var token = _jwtService.GenerateToken(user,roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         var response = new AuthResponse
@@ -104,7 +92,8 @@ public class AuthController : ControllerBase
             RefreshToken = refreshToken,
             Expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
             Username = user.Username,
-            Email = user.Email
+            Email = user.Email,
+            Roles = roles
         };
 
         _logger.LogInformation("User logged in successfully: {Username}", user.Username);
@@ -126,12 +115,7 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Invalid token" });
         }
 
-        // In a real implementation, you would:
-        // 1. Validate the refresh token against a database
-        // 2. Get the user from the token claims
-        // 3. Generate a new token
-
-        // For demo purposes, we'll return an error suggesting to login again
+      
         return BadRequest(new { message = "Please login again to get a new token" });
     }
 

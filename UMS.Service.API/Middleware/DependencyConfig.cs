@@ -49,10 +49,11 @@ namespace UMS.Service.API.Middleware
         }
         public static void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<IRoleService, RoleService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IUserSession, UserSession>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IJwtService, JwtService>();
-
         }
         public static void AddRepositories(this IServiceCollection services)
         {

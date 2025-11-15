@@ -25,6 +25,12 @@ namespace UMS.Core.AutoMapper
                 .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.RoleName.Trim()))
                 .ForMember(d => d.Description, opt => opt.MapFrom(s => s.Description != null ? s.Description.Trim() : null))
                 .ReverseMap();
+
+            CreateMap<UserRoleDto,UserRole>()
+                .ForMember(d=>d.UserId, opt => opt.MapFrom(s => s.UserId.Trim()))
+                .ForMember(d => d.RoleId, opt => opt.MapFrom(s => s.RoleId.Trim()))
+                .ForMember(d=>d.UserName, opt => opt.MapFrom(s => s.UserName.Trim()))
+                .ReverseMap();
         }
     }
 }

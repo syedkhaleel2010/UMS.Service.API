@@ -20,20 +20,22 @@ namespace UMS.Service
             this.userRepository = userRepository;
             _mapper = mapper;
         }
-       public async Task<User> CreateUserAsync(RegisterUserDto request)
+       public async Task<RegisterUserDto> CreateUserAsync(RegisterUserDto request)
         {
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
+            request.ID = Guid.NewGuid().ToString();
             var User = _mapper.Map<User>(request);
-
-            User.ID = Guid.NewGuid().ToString();
+           
             User.PasswordHash = passwordHash;
             User.PasswordSalt = passwordSalt;
-            User.CreatedBy = "3929FF4B-E546-4D07-A992-AD7A84DBDD30";
+            User.CreatedBy = "SYSTEM";
             User.CreatedOn = DateTime.UtcNow;
            
-            return await userRepository.RegisterUser(User);
+            await userRepository.RegisterUser(User);
+
+            return request;
 
         }
 

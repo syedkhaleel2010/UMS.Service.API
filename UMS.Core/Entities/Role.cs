@@ -7,5 +7,8 @@
         public string Description { get; set; }
         public DateTime CreatedOn { get; set; }
         public string CreatedBy { get; set; }
+
+        public ICollection<UserRole> UserRoles { get; set; }
+
     }
 }

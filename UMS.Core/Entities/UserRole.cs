@@ -2,14 +2,12 @@
 {
     public class UserRole : EntityBase
     {
-        public string Username { get; set; }
-        public string Email { get; set; }
+        public string UserId { get; set; } = string.Empty;
+        public string UserName { get; set; } =string.Empty;
+        public string RoleId { get; set; } = string.Empty;
 
-        public byte[] PasswordHash { get; set; }
-        public byte[] PasswordSalt { get; set; }
+        public User User { get; set; }
 
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public bool IsActive { get; set; }
+        public Role Role { get; set; }
     }
 }

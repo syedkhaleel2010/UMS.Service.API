@@ -12,7 +12,7 @@ namespace UMS.Service.Interfaces
     {
         Task<User?> GetUserByUsernameAsync(string username);
         Task<User?> GetUserByEmailAsync(string email);
-        Task<User> CreateUserAsync(RegisterUserDto request);
+        Task<RegisterUserDto> CreateUserAsync(RegisterUserDto request);
         bool VerifyPassword(string password, byte[] storedHash, byte[] storedSalt);
         void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt);
     }

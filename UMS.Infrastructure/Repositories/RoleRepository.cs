@@ -17,6 +17,12 @@ namespace UMS.Infrastructure.Repositories
             dbContext.SaveChanges();
             return await Task.FromResult<Role>(role);
         }
+        public async Task<UserRole> AssignRole(UserRole userRole)
+        {
+            dbContext.UserRoles.Add(userRole);
+            dbContext.SaveChanges();
+            return await Task.FromResult<UserRole>(userRole);
+        }
     }
     
 }

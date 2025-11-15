@@ -10,5 +10,6 @@ namespace UMS.Core.Interfaces
     public interface IRoleRepository
     {
        Task<Role> CreateRole(Role role);
+       Task<UserRole> AssignRole(UserRole userRole);
     }
 }

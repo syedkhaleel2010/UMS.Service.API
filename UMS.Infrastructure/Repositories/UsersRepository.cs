@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,11 @@ namespace UMS.Infrastructure.Repositories
     {
         public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return await Task.FromResult(dbContext.Users.FirstOrDefault(u => u.Username == username));
+            return await Task.FromResult(dbContext.Users
+            .Include(u => u.UserRoles)
+            .ThenInclude(ur => ur.Role)
+            .FirstOrDefault(u => u.Username == username));
+
         }
         public async Task<User?> GetUserByEmailAsync(string email)
         {
