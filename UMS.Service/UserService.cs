@@ -8,6 +8,8 @@ using UMS.Core.Interfaces;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using UMS.Infrastructure.Data;
+using UMS.Core.Helper;
+using Microsoft.EntityFrameworkCore;
 namespace UMS.Service
 {
     public class UserService :BaseService, IUserService
@@ -19,10 +21,10 @@ namespace UMS.Service
         private readonly IConfiguration _config;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserPasswordHistoryrRepository _userPasswordHistoryrRepository;
-
+        private readonly IAuditLogRepository _auditLogRepository;
         public UserService(ILogger<UserService> logger,IUserRepository userRepository, 
             IMapper mapper, IUserSession userSession,IConfiguration config,
-            IUserPasswordHistoryrRepository userPasswordHistoryrRepository, IUnitOfWork unitOfWork) : base(userSession)
+            IUserPasswordHistoryrRepository userPasswordHistoryrRepository, IUnitOfWork unitOfWork,IAuditLogRepository auditLogRepository) : base(userSession)
         {
             _logger = logger;
             this.userRepository = userRepository;
@@ -31,6 +33,8 @@ namespace UMS.Service
             _config = config;
             _userPasswordHistoryrRepository = userPasswordHistoryrRepository;
             _unitOfWork = unitOfWork;
+            _auditLogRepository = auditLogRepository;
+
         }
 
         public async Task<User?> UserLogin(LoginRequest request)
@@ -89,21 +93,42 @@ namespace UMS.Service
 
 
 
-        public async Task<RegisterUserDto> UpdateUserAsync(RegisterUserDto request)
+        public async Task<UpdateUserDto> UpdateUserAsync(UpdateUserDto request)
         {
 
             var user = await GetUserByUsernameAsync(request.Username);
-
+            var cloneUser = user.Clone();
             if (user == null) {
                 throw new Exception("User not found");
             }
+           
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
-            user.IsActive = request.IsActive;
 
             SetUpdatedBy(user);
 
-            await userRepository.RegisterUser(user);
+            await userRepository.UpdateUser(user);
+
+            var changes = Utility.EntityChangeHelper.GetEntityChanges(cloneUser, user);
+
+            if (changes.Count > 0)
+            {
+                var changeHistory = new AuditLog()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    RowId = request.ID,
+                    PerformedFromIp = Utility.GetIP(),
+                    UserAction = "Update",
+                    DbTable = typeof(User).Name,
+                    FieldChanges = Newtonsoft.Json.JsonConvert.SerializeObject(changes),
+                    IsActive = true
+                };
+                SetCreatedBy(changeHistory);
+
+                _auditLogRepository.Add(changeHistory);
+            }
+            await _unitOfWork.CommitAsync();
+
 
             return request;
 

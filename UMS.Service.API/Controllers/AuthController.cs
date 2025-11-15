@@ -62,7 +62,7 @@ public class AuthController : ServiceControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("update-userdetails")]
-    public async Task<IActionResult> UpdateUserDetails([FromBody] RegisterUserDto request)
+    public async Task<IActionResult> UpdateUserDetails([FromBody] UpdateUserDto request)
     {
         var user = await _userService.UpdateUserAsync(request);
         return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());

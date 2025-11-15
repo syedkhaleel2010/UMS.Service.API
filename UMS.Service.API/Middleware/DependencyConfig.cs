@@ -61,6 +61,7 @@ namespace UMS.Service.API.Middleware
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserPasswordHistoryrRepository, UserPasswordHistoryrRepository>();
+            services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         }
         public static void AddInfrastructure(this IServiceCollection services,IConfiguration configuration)
         {

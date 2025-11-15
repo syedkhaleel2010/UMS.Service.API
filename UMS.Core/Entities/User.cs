@@ -15,5 +15,23 @@ namespace UMS.Core.Entities
         public bool? IsAccountLocked { get; set; }
         public int? NumOfAttempt { get; set; }
         public ICollection<UserRole> UserRoles { get; set; }
+        public User Clone()
+        {
+            return new User
+            {
+                Username = this.Username,
+                Email = this.Email,
+                PasswordHash = this.PasswordHash,
+                PasswordSalt = this.PasswordSalt,
+                FirstName = this.FirstName,
+                LastName = this.LastName,
+                IsActive = this.IsActive,
+                IsAccountLocked = this.IsAccountLocked,
+                NumOfAttempt = this.NumOfAttempt,
+                UserRoles = this.UserRoles != null ? new List<UserRole>(this.UserRoles) : null
+            };
+        }
+
+
     }
 }

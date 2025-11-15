@@ -36,4 +36,16 @@ namespace UMS.Core.Dto
         public string ID { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
     }
+
+    public class UpdateUserDto
+    {
+        public string? ID { get; set; }
+
+        [Required(ErrorMessage = "Username is required")]
+        [MinLength(3, ErrorMessage = "Username must be at least 3 characters")]
+        public string Username { get; set; } = string.Empty;
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+
+    }
 }
