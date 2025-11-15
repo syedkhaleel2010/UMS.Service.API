@@ -7,11 +7,12 @@ using UMS.Core.Entities;
 
 namespace UMS.Core.Interfaces
 {
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
         Task<User?> GetUserByUsernameAsync(string username);
         Task<User?> RegisterUser(User user);
-
+        Task<User?> UpdateUser(User user); 
+        Task<User?> DeleteUser(User user);
         Task<User?> GetUserByEmailAsync(string username);
     }
 }

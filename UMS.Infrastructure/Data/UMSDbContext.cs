@@ -19,6 +19,7 @@ namespace UMS.Infrastructure.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<USER_PASSWORD_HISTORY> UserPasswordHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

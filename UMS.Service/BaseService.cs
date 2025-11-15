@@ -28,13 +28,13 @@ namespace UMS.Service
         protected void SetCreatedBy(EntityBase entity)
         {
             entity.CreatedBy = GetUsername() ?? "system";
-            entity.CreatedOn = DateTime.Now;
+            entity.CreatedOn = DateTime.UtcNow;
         }
 
         protected void SetUpdatedBy(EntityBase entity)
         {
             entity.ModifiedBy = GetUsername() ?? "system";
-            entity.ModifiedOn = DateTime.Now;
+            entity.ModifiedOn = DateTime.UtcNow;
         }
 
         protected async Task<HttpClient> AddTokenWithHttpClient(HttpClient httpClient, string token)

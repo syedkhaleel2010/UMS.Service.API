@@ -9,6 +9,8 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public bool IsActive { get; set; }
+        public bool? IsAccountLocked { get; set; }
+        public int? NumOfAttempt { get; set; }
         public ICollection<UserRole> UserRoles { get; set; }
     }
 }

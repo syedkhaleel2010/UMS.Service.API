@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UMS.Core.Dto;
+using UMS.Service.API.Common;
 using UMS.Service.API.Models;
 using UMS.Service.Interfaces;
 
@@ -57,9 +58,35 @@ public class AuthController : ServiceControllerBase
         return OkServiceResponse(user,"User created successfully");
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPut("update-userdetails")]
+    public async Task<IActionResult> UpdateUserDetails([FromBody] RegisterUserDto request)
+    {
+        var user = await _userService.UpdateUserAsync(request);
+        return OkServiceResponse(user, "User updated successfully");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("deleteUser")]
+    public async Task<IActionResult> deleteUser([FromBody] DeleteUserDto request)
+    {
+        var user = await _userService.DeleteUser(request);
+        return OkServiceResponse(user, "User deleted successfully");
+    }
+
+    [HttpPost]
+    [Route("UserPasswordResetRequest")]
+   
+    public async Task<IActionResult> UserPasswordResetRequest(UserPasswordResetRequest request)
+    {
+        string user = User.Identity.Name;
+            await _userService.ResetUserPassword(request, user);
+            return Ok(ServiceResponse.SuccessResponse("Password reset successfully!"));
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] Core.Dto.LoginRequest request)
     {
         if (!ModelState.IsValid)
         {
@@ -67,20 +94,9 @@ public class AuthController : ServiceControllerBase
         }
 
         // Find user by username
-        var user = await _userService.GetUserByUsernameAsync(request.Username);
-        if (user == null)
-        {
-            _logger.LogWarning("Login attempt with invalid username: {Username}", request.Username);
-            return Unauthorized(new { message = "Invalid username or password" });
-        }
-
-        // Verify password
-        if (!_userService.VerifyPassword(request.Password, user.PasswordHash,user.PasswordSalt))
-        {
-            _logger.LogWarning("Login attempt with invalid password for user: {Username}", request.Username);
-            return Unauthorized(new { message = "Invalid username or password" });
-        }
-        var roles = user.UserRoles.Select(r => r.Role.RoleName).ToList();
+        var user = await _userService.UserLogin(request);
+       
+        var roles = user?.UserRoles.Select(r => r.Role.RoleName).ToList();
 
         // Generate token
         var token = _jwtService.GenerateToken(user,roles);

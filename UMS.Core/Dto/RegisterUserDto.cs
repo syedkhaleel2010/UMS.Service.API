@@ -26,5 +26,14 @@ namespace UMS.Core.Dto
         public string Password { get; set; } = string.Empty;
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+
+    public class DeleteUserDto
+    {
+        [Required(ErrorMessage = "User ID is required")]
+        public string ID { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
     }
 }
