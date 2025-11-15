@@ -2,6 +2,8 @@ using UMS.Core.AutoMapper;
 using UMS.Core.Dto;
 using UMS.Service.API.Middleware;
 using AutoMapper;
+using Microsoft.Extensions.Localization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -20,6 +22,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger();
 
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+builder.Services.AddControllers()
+    .AddDataAnnotationsLocalization()
+    .AddViewLocalization();
+
+var supportedCultures = new[] { "en", "ar" };
+
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.SetDefaultCulture("en");
+    options.AddSupportedCultures(supportedCultures);
+    options.AddSupportedUICultures(supportedCultures);
+});
+
+
 var app = builder.Build();
 
 
@@ -35,6 +53,7 @@ app.UseHttpsRedirection();
 // Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCustomLocalization();
 
 app.MapControllers();
 
