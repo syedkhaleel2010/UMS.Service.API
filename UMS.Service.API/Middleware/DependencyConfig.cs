@@ -1,4 +1,10 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using UMS.Core.Interfaces;
+using UMS.Infrastructure.Data;
+using UMS.Infrastructure.Repositories;
+using UMS.Service.Interfaces;
 
 namespace UMS.Service.API.Middleware
 {
@@ -43,11 +49,20 @@ namespace UMS.Service.API.Middleware
         }
         public static void AddServices(this IServiceCollection services)
         {
-            
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IJwtService, JwtService>();
         }
         public static void AddRepositories(this IServiceCollection services)
         {
-
+            services.AddScoped<IUserRepository, UserRepository>();
+        }
+        public static void AddInfrastructure(this IServiceCollection services,IConfiguration configuration)
+        {
+            var connectionstring = configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<UMSDbContext>(options =>
+            {
+                options.UseSqlServer(connectionstring);
+            });
         }
     }
 }

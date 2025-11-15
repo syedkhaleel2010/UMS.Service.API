@@ -1,3 +1,4 @@
+using UMS.Core.Dto;
 using UMS.Service.API.Middleware;
 using UMS.Service.API.Models;
 
@@ -10,7 +11,10 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 //// Register services
 //builder.Services.AddScoped<IJwtService, JwtService>();
 //builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddServices();
+builder.Services.AddRepositories();
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UMS.Core.Dto;
 using UMS.Service.API.Models;
-using UMS.Service.API.Services;
+using UMS.Service.Interfaces;
 
 namespace UMS.Service.API.Controllers;
 
@@ -28,7 +29,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("register")]
     [AllowAnonymous]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterUserDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -87,7 +88,7 @@ public class AuthController : ControllerBase
         }
 
         // Verify password
-        if (!_userService.VerifyPassword(request.Password, user.PasswordHash))
+        if (!_userService.VerifyPassword(request.Password, user.PasswordHash,user.PasswordSalt))
         {
             _logger.LogWarning("Login attempt with invalid password for user: {Username}", request.Username);
             return Unauthorized(new { message = "Invalid username or password" });
