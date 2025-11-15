@@ -1,5 +1,8 @@
-﻿namespace UMS.Core.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace UMS.Core.Entities
 {
+    [Table("USER_ROLES", Schema = "DBO")]
     public class UserRole : EntityBase
     {
         public string UserId { get; set; } = string.Empty;

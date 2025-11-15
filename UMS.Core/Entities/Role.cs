@@ -1,5 +1,8 @@
-﻿namespace UMS.Core.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace UMS.Core.Entities
 {
+    [Table("ROLES", Schema = "DBO")]
     public class Role
     {
         public string ID { get; set; }

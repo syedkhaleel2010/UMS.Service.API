@@ -235,7 +235,7 @@ namespace UMS.Service
             {
                 throw new ArgumentException("Account Locked, Please contact administrator!!");
             }
-          
+            SetUpdatedBy(User);
             if (!VerifyPassword(Password, User.PasswordHash, User.PasswordSalt))
             {
                 int NoOfLoginAttemptsAllowed;
@@ -250,10 +250,12 @@ namespace UMS.Service
                 {
                     User.IsAccountLocked = true;
                 }
-                 await this.userRepository.UpdateUser(User);
+                
+                
+                await this.userRepository.UpdateUser(User);
                
 
-                if (User.IsAccountLocked.Value)
+                if (User.IsAccountLocked is not null && User.IsAccountLocked.Value)
                 {
                     throw new ArgumentException("Account Locked, Please contact administrator!!");
                 }
@@ -267,7 +269,6 @@ namespace UMS.Service
             {
                 User.NumOfAttempt = 0;
                 await this.userRepository.UpdateUser(User);
-                
             }
         }
 

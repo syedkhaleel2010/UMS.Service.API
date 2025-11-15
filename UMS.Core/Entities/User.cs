@@ -1,5 +1,8 @@
-﻿namespace UMS.Core.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace UMS.Core.Entities
 {
+    [Table("USERS", Schema = "DBO")]
     public class User : EntityBase
     {
         public string Username { get; set; }
