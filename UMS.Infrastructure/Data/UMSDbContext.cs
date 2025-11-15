@@ -13,10 +13,10 @@ namespace UMS.Infrastructure.Data
     {
         public UMSDbContext(DbContextOptions<UMSDbContext> options) : base(options)
         {
-
             
         }
 
-        public DbSet<User> users { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
     }
 }

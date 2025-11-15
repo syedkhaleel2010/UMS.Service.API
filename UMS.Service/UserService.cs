@@ -5,34 +5,35 @@ using UMS.Core.Entities;
 using UMS.Service.Interfaces;
 using Microsoft.Extensions.Logging;
 using UMS.Core.Interfaces;
+using AutoMapper;
 namespace UMS.Service
 {
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
         private readonly IUserRepository userRepository;
+        private readonly IMapper _mapper;
 
-        public UserService(ILogger<UserService> logger,IUserRepository userRepository)
+        public UserService(ILogger<UserService> logger,IUserRepository userRepository, IMapper mapper)
         {
             _logger = logger;
             this.userRepository = userRepository;
+            _mapper = mapper;
         }
        public async Task<User> CreateUserAsync(RegisterUserDto request)
         {
 
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            User user = new User
-            {
-                Username = request.Username,
-                Email = request.Email,
-                PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt,
-                FirstName = request.FirstName,
-                LastName=request.LastName,
-                CreatedBy= "3929FF4B-E546-4D07-A992-AD7A84DBDD30",
-                CreatedOn = DateTime.UtcNow
-            };
-            return await userRepository.RegisterUser(user);
+
+            var User = _mapper.Map<User>(request);
+
+            User.ID = Guid.NewGuid().ToString();
+            User.PasswordHash = passwordHash;
+            User.PasswordSalt = passwordSalt;
+            User.CreatedBy = "3929FF4B-E546-4D07-A992-AD7A84DBDD30";
+            User.CreatedOn = DateTime.UtcNow;
+           
+            return await userRepository.RegisterUser(User);
 
         }
 

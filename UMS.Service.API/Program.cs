@@ -1,18 +1,17 @@
+using UMS.Core.AutoMapper;
 using UMS.Core.Dto;
 using UMS.Service.API.Middleware;
-using UMS.Service.API.Models;
-
+using AutoMapper;
 var builder = WebApplication.CreateBuilder(args);
 
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
-//// Register services
-//builder.Services.AddScoped<IJwtService, JwtService>();
-//builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddAutoMapper(config => config.AddProfile<EntityDtoMapper>()); //register auto mapper
+builder.Services.AddInfrastructure(builder.Configuration);// add db connection
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 builder.Services.ConfigureJwtAuthentication(builder.Configuration);
