@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using UMS.Service.API.Resources;
 
 namespace UMS.Service.API.Controllers
 {
@@ -22,7 +21,7 @@ namespace UMS.Service.API.Controllers
         {
             return Ok(new
             {
-                message = _localizer["WelcomeMessage"]
+                message = _localizer["WelcomeMessage"].ToString()
             });
         }
     }
