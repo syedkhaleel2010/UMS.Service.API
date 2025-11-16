@@ -78,12 +78,38 @@ public class AuthController : ServiceControllerBase
 
     [HttpPost]
     [Route("UserPasswordResetRequest")]
-   
-    public async Task<IActionResult> UserPasswordResetRequest(UserPasswordResetRequest request)
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> UserPasswordResetRequest([FromBody] UserPasswordResetRequest request)
     {
-        string user = User.Identity.Name;
-            await _userService.ResetUserPassword(request, user);
-            return Ok(ServiceResponse.SuccessResponse(Localizer["PasswordResetSuccessfully"].ToString()));
+        if (!ModelState.IsValid)
+        {
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
+        }
+
+        string user = User.Identity?.Name;
+        if (string.IsNullOrEmpty(user))
+        {
+            return Unauthorized(new { message = Localizer["AuthenticationRequired"].ToString() });
+        }
+
+        // Get user roles from JWT token claims
+        var userRoles = User.Claims
+            .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        // Check if user has Admin role
+        bool isAdmin = userRoles.Contains("Admin");
+
+        // If user has only "User" role (not Admin), OldPassword is mandatory
+        if (!isAdmin && string.IsNullOrWhiteSpace(request.OldPassword))
+        {
+            ModelState.AddModelError(nameof(request.OldPassword), "OldPassword is required for users with User role only.");
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
+        }
+
+        await _userService.ResetUserPassword(request, user);
+        return Ok(ServiceResponse.SuccessResponse(Localizer["PasswordResetSuccessfully"].ToString()));
     }
 
     [HttpPost("login")]

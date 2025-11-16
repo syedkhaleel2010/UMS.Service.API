@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace UMS.Core.Dto
 {
-    public class UserPasswordResetRequest
+    public class UserPasswordResetRequest : IValidatableObject
     {
-     
         public string OldPassword { get; set; }
+        
         /// <summary>
         /// 
         /// </summary>
@@ -36,5 +36,15 @@ namespace UMS.Core.Dto
 
         public bool IsAdmin { get; set; }
 
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // If IsAdmin is false, OldPassword is required
+            if (!IsAdmin && string.IsNullOrWhiteSpace(OldPassword))
+            {
+                yield return new ValidationResult(
+                    "OldPassword is required when IsAdmin is false.",
+                    new[] { nameof(OldPassword) });
+            }
+        }
     }
 }
