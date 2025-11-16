@@ -9,7 +9,8 @@ namespace UMS.Service.Interfaces
         Task<User?> GetUserByUsernameAsync(string username);
         Task<User?> GetUserByEmailAsync(string email);
         Task<RegisterUserDto> CreateUserAsync(RegisterUserDto request);
-        Task<UpdateUserDto> UpdateUserAsync(UpdateUserDto request);
+        Task<UpdateUserDto> UpdateUserDetailsAsync(UpdateUserDto request);
+        Task<UpdateUserDto> UpdateUserDetailsWithRoleAsync(UpdateUserDto request);
         Task<bool> DeleteUser(DeleteUserDto request);
         Task ResetUserPassword(UserPasswordResetRequest request, string modifyingUser);
         bool VerifyPassword(string password, byte[] storedHash, byte[] storedSalt);

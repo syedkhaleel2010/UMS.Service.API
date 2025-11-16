@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using UMS.Core.Entities;
 
 namespace UMS.Core.Dto
 {
@@ -46,6 +47,6 @@ namespace UMS.Core.Dto
         public string Username { get; set; } = string.Empty;
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-
+        public List<UserRoleDto> UserRoleDto { get; set; }
     }
 }

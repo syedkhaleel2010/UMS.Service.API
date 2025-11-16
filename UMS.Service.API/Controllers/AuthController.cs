@@ -60,12 +60,40 @@ public class AuthController : ServiceControllerBase
         return OkServiceResponse(user, Localizer["UserCreatedSuccessfully"].ToString());
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,User")]
     [HttpPut("update-userdetails")]
     public async Task<IActionResult> UpdateUserDetails([FromBody] UpdateUserDto request)
     {
-        var user = await _userService.UpdateUserAsync(request);
-        return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
+        if (!ModelState.IsValid)
+        {
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
+        }
+        string userName = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userName))
+        {
+            return Unauthorized(new { message = Localizer["AuthenticationRequired"].ToString() });
+        }
+
+        // Get user roles from JWT token claims
+        var userRoles = User.Claims
+            .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        // Check if user has Admin role
+        bool isAdmin = userRoles.Contains("Admin");
+
+        if (isAdmin && request.UserRoleDto is not null && request.UserRoleDto.Count() > 0)
+        {
+            var user = await _userService.UpdateUserDetailsWithRoleAsync(request);
+            return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
+        }
+        else
+        {
+            var user = await _userService.UpdateUserDetailsAsync(request);
+            return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
+        }
+        
     }
 
     [Authorize(Roles = "Admin")]

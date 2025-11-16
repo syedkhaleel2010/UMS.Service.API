@@ -15,7 +15,7 @@ namespace UMS.Service
     public class UserService :BaseService, IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly IUserRepository userRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
         private readonly IUserSession _userSession;
         private readonly IConfiguration _config;
@@ -27,7 +27,7 @@ namespace UMS.Service
             IUserPasswordHistoryrRepository userPasswordHistoryrRepository, IUnitOfWork unitOfWork,IAuditLogRepository auditLogRepository) : base(userSession)
         {
             _logger = logger;
-            this.userRepository = userRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
             _userSession = userSession;
             _config = config;
@@ -85,7 +85,7 @@ namespace UMS.Service
             User.PasswordSalt = passwordSalt;
             SetCreatedBy(User);
            
-            await userRepository.RegisterUser(User);
+            await _userRepository.RegisterUser(User);
 
             return request;
 
@@ -93,7 +93,7 @@ namespace UMS.Service
 
 
 
-        public async Task<UpdateUserDto> UpdateUserAsync(UpdateUserDto request)
+        public async Task<UpdateUserDto> UpdateUserDetailsAsync(UpdateUserDto request)
         {
 
             var user = await GetUserByUsernameAsync(request.Username);
@@ -107,7 +107,7 @@ namespace UMS.Service
 
             SetUpdatedBy(user);
 
-            await userRepository.UpdateUser(user);
+            await _userRepository.UpdateUser(user);
 
             var changes = Utility.EntityChangeHelper.GetEntityChanges(cloneUser, user);
 
@@ -133,14 +133,76 @@ namespace UMS.Service
             return request;
 
         }
+
+        public async Task<UpdateUserDto> UpdateUserDetailsWithRoleAsync(UpdateUserDto request)
+        {
+
+            var user = await GetUserByUsernameAsync(request.Username);
+            var cloneUser = user.Clone();
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+
+            SetUpdatedBy(user);
+
+            _userRepository.AddOrUpdate(user);
+
+            var changes = Utility.EntityChangeHelper.GetEntityChanges(cloneUser, user);
+
+            if (changes.Count > 0)
+            {
+                var changeHistory = new AuditLog()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    RowId = request.ID,
+                    PerformedFromIp = Utility.GetIP(),
+                    UserAction = "Update",
+                    DbTable = typeof(User).Name,
+                    FieldChanges = Newtonsoft.Json.JsonConvert.SerializeObject(changes),
+                    IsActive = true
+                };
+                SetCreatedBy(changeHistory);
+
+                _auditLogRepository.Add(changeHistory);
+            }
+
+             changes = Utility.EntityChangeHelper.GetEntityChanges(cloneUser.UserRoles, user.UserRoles);
+
+            if (changes.Count > 0)
+            {
+                var changeHistory = new AuditLog()
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    RowId = request.ID,
+                    PerformedFromIp = Utility.GetIP(),
+                    UserAction = "Update",
+                    DbTable = typeof(UserRole).Name,
+                    FieldChanges = Newtonsoft.Json.JsonConvert.SerializeObject(changes),
+                    IsActive = true
+                };
+                SetCreatedBy(changeHistory);
+
+                _auditLogRepository.Add(changeHistory);
+            }
+
+            await _unitOfWork.CommitAsync();
+
+
+            return request;
+
+        }
         public async  Task<User?> GetUserByEmailAsync(string email)
         {
-            return await this.userRepository.GetUserByEmailAsync(email);
+            return await _userRepository.GetUserByEmailAsync(email);
         }
 
        public async  Task<User?> GetUserByUsernameAsync(string username)
         {
-         return await this.userRepository.GetUserByUsernameAsync(username);
+         return await _userRepository.GetUserByUsernameAsync(username);
         }
 
         public bool VerifyPassword(string password, byte[] storedHash, byte[] storedSalt)
@@ -173,7 +235,7 @@ namespace UMS.Service
             }
             user.IsActive = false;
             SetUpdatedBy(user);
-            await userRepository.DeleteUser(user);
+            await _userRepository.DeleteUser(user);
             return true;
         }
 
@@ -207,7 +269,7 @@ namespace UMS.Service
                 externalUserData.PasswordHash = _passwordHash;
                 externalUserData.PasswordSalt = _passwordSalt;
                 SetUpdatedBy(externalUserData);
-                this.userRepository.AddOrUpdate(externalUserData);
+                _userRepository.AddOrUpdate(externalUserData);
 
                 _userPasswordHistoryrRepository.Add(new USER_PASSWORD_HISTORY()
                 {
@@ -277,7 +339,7 @@ namespace UMS.Service
                 }
                 
                 
-                await this.userRepository.UpdateUser(User);
+                await _userRepository.UpdateUser(User);
                
 
                 if (User.IsAccountLocked is not null && User.IsAccountLocked.Value)
@@ -293,7 +355,7 @@ namespace UMS.Service
             else
             {
                 User.NumOfAttempt = 0;
-                await this.userRepository.UpdateUser(User);
+                await _userRepository.UpdateUser(User);
             }
         }
 
