@@ -15,5 +15,6 @@ namespace UMS.Service.Interfaces
         Task ResetUserPassword(UserPasswordResetRequest request, string modifyingUser);
         bool VerifyPassword(string password, byte[] storedHash, byte[] storedSalt);
         void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt);
+        Task<PagedUserListResponseDto> GetUsersListAsync(UserListRequestDto request);
     }
 }

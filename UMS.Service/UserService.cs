@@ -359,5 +359,32 @@ namespace UMS.Service
             }
         }
 
+        public async Task<PagedUserListResponseDto> GetUsersListAsync(UserListRequestDto request)
+        {
+            var (users, totalCount) = await _userRepository.GetUsersWithPaginationAsync(request);
+
+            var userList = users.Select(u => new UserListResponseDto
+            {
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                CreatedOn = u.CreatedOn,
+                CreatedBy = u.CreatedBy,
+                ModifiedOn = u.ModifiedOn,
+                ModifiedBy = u.ModifiedBy,
+                IsAccountLocked = u.IsAccountLocked,
+                NumOfAttempt = u.NumOfAttempt,
+                Roles = u.UserRoles?.Select(ur => ur.Role?.RoleName).Where(r => r != null).ToList() ?? new List<string>()
+            }).ToList();
+
+            return new PagedUserListResponseDto
+            {
+                Users = userList,
+                TotalCount = totalCount,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+        }
+
     }
 }

@@ -207,4 +207,7 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>Access denied. You do not have permission to access this resource.</value>
   </data>
+  <data name="UsersRetrievedSuccessfully" xml:space="preserve">
+    <value>Users retrieved successfully</value>
+  </data>
 </root>

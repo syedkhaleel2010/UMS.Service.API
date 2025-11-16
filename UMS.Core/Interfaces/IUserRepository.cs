@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UMS.Core.Entities;
+using UMS.Core.Dto;
 
 namespace UMS.Core.Interfaces
 {
@@ -14,5 +15,6 @@ namespace UMS.Core.Interfaces
         Task<User?> UpdateUser(User user); 
         Task<User?> DeleteUser(User user);
         Task<User?> GetUserByEmailAsync(string username);
+        Task<(List<User> users, int totalCount)> GetUsersWithPaginationAsync(UserListRequestDto request);
     }
 }

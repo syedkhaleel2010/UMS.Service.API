@@ -206,6 +206,32 @@ public class AuthController : ServiceControllerBase
             Email = email
         });
     }
+
+    [HttpGet("users")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetUsersList([FromQuery] UserListRequestDto request)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (request.PageNumber < 1)
+            {
+                request.PageNumber = 1;
+            }
+            if (request.PageSize < 1 || request.PageSize > 100)
+            {
+                request.PageSize = 10; // Default page size
+            }
+
+            var result = await _userService.GetUsersListAsync(request);
+            return OkServiceResponse(result, Localizer["UsersRetrievedSuccessfully"]?.ToString() ?? "Users retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving users list");
+            return HandleOtherException(ex);
+        }
+    }
 }
 
 public class RefreshTokenRequest

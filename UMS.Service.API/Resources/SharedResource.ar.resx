@@ -207,4 +207,7 @@
   <data name="AccessDenied" xml:space="preserve">
     <value>تم رفض الوصول. ليس لديك إذن للوصول إلى هذا المورد.</value>
   </data>
+  <data name="UsersRetrievedSuccessfully" xml:space="preserve">
+    <value>تم استرجاع المستخدمين بنجاح</value>
+  </data>
 </root>
