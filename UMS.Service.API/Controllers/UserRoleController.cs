@@ -60,5 +60,20 @@ namespace UMS.Service.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, Localizer["InternalServerError"].ToString());
             }
         }
+        [Authorize(Roles = "Admin")]
+        [HttpGet("GetAllRoles")]
+        public async Task<IActionResult> GetAllRoles()
+        {
+            try
+            {
+                var roles = await this.roleService.GetAllRoles();
+                return OkServiceResponse(roles, Localizer["RolesRetrievedSuccessfully"].ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving roles.");
+                return StatusCode(StatusCodes.Status500InternalServerError, Localizer["InternalServerError"].ToString());
+            }
+        }
     }
 }

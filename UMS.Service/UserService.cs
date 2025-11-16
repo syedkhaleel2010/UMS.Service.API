@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 using UMS.Core.Dto;
 using UMS.Core.Entities;
 using UMS.Service.Interfaces;
@@ -22,9 +23,10 @@ namespace UMS.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserPasswordHistoryrRepository _userPasswordHistoryrRepository;
         private readonly IAuditLogRepository _auditLogRepository;
+        private readonly IRoleService _roleService;
         public UserService(ILogger<UserService> logger,IUserRepository userRepository, 
             IMapper mapper, IUserSession userSession,IConfiguration config,
-            IUserPasswordHistoryrRepository userPasswordHistoryrRepository, IUnitOfWork unitOfWork,IAuditLogRepository auditLogRepository) : base(userSession)
+            IUserPasswordHistoryrRepository userPasswordHistoryrRepository, IUnitOfWork unitOfWork,IAuditLogRepository auditLogRepository, IRoleService roleService) : base(userSession)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -34,6 +36,7 @@ namespace UMS.Service
             _userPasswordHistoryrRepository = userPasswordHistoryrRepository;
             _unitOfWork = unitOfWork;
             _auditLogRepository = auditLogRepository;
+            _roleService = roleService;
 
         }
 
@@ -91,6 +94,38 @@ namespace UMS.Service
 
         }
 
+        public async Task<RegisterUserWithRolesDto> CreateUserWithRolesAsync(RegisterUserWithRolesDto request)
+        {
+            // First create the user
+            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            request.ID = Guid.NewGuid().ToString();
+            var user = _mapper.Map<User>(request);
+           
+            user.PasswordHash = passwordHash;
+            user.PasswordSalt = passwordSalt;
+            SetCreatedBy(user);
+           
+            await _userRepository.RegisterUser(user);
+
+            // Then assign roles if provided
+            if (request.RoleIds != null && request.RoleIds.Any())
+            {
+                foreach (var roleId in request.RoleIds)
+                {
+                    var userRoleDto = new UserRoleDto
+                    {
+                        UserId = request.ID,
+                        UserName = request.Username,
+                        RoleId = roleId
+                    };
+                    await _roleService.AssignRole(userRoleDto);
+                }
+            }
+
+            return request;
+        }
+
 
 
         public async Task<UpdateUserDto> UpdateUserDetailsAsync(UpdateUserDto request)
@@ -134,7 +169,7 @@ namespace UMS.Service
 
         }
 
-        public async Task<UpdateUserDto> UpdateUserDetailsWithRoleAsync(UpdateUserDto request)
+        public async Task<UpdateUserWithRoleDto> UpdateUserDetailsWithRoleAsync(UpdateUserWithRoleDto request)
         {
 
             var user = await GetUserByUsernameAsync(request.Username);
@@ -146,6 +181,8 @@ namespace UMS.Service
 
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
+            user.IsActive = request.IsActive;
+            user.IsAccountLocked = request.IsAccountLocked;
 
             SetUpdatedBy(user);
 
@@ -203,6 +240,27 @@ namespace UMS.Service
        public async  Task<User?> GetUserByUsernameAsync(string username)
         {
          return await _userRepository.GetUserByUsernameAsync(username);
+        }
+
+        public async Task<GetUserByIdResponseDto?> GetUserByIdAsync(string id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return null;
+            }
+
+            return new GetUserByIdResponseDto
+            {
+                Username = user.Username,
+                Email = user.Email,
+                Password = null, 
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsActive = user.IsActive,
+                IsAccountLocked = user.IsAccountLocked.HasValue ? user.IsAccountLocked.Value : false,
+                RoleIds = user.UserRoles?.Select(ur => ur.RoleId).ToList() ?? new List<string>()
+            };
         }
 
         public bool VerifyPassword(string password, byte[] storedHash, byte[] storedSalt)
@@ -365,6 +423,8 @@ namespace UMS.Service
 
             var userList = users.Select(u => new UserListResponseDto
             {
+                ID=u.ID,
+                Username=u.Username,
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 Email = u.Email,
@@ -374,6 +434,7 @@ namespace UMS.Service
                 ModifiedBy = u.ModifiedBy,
                 IsAccountLocked = u.IsAccountLocked,
                 NumOfAttempt = u.NumOfAttempt,
+                IsActive= u.IsActive,
                 Roles = u.UserRoles?.Select(ur => ur.Role?.RoleName).Where(r => r != null).ToList() ?? new List<string>()
             }).ToList();
 

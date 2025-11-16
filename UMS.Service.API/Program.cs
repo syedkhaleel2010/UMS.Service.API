@@ -77,7 +77,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     });
     builder.Services.AddCors(options => options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
-
     var app = builder.Build();
 
 
@@ -101,7 +100,10 @@ app.UseRequestLocalization(localizationOptions!.Value);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+
+    // Apply the CORS policy
+    app.UseCors("AllowAll");
+    app.MapControllers();
 
 app.Run();
 }

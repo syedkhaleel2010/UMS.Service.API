@@ -2,6 +2,8 @@ namespace UMS.Core.Dto
 {
     public class UserListResponseDto
     {
+        public string ID { get; set; }
+        public string Username { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string Email { get; set; } = string.Empty;
@@ -11,6 +13,7 @@ namespace UMS.Core.Dto
         public string? ModifiedBy { get; set; }
         public bool? IsAccountLocked { get; set; }
         public int? NumOfAttempt { get; set; }
+        public bool? IsActive { get; set; }
         public List<string> Roles { get; set; } = new List<string>();
     }
 

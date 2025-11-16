@@ -13,5 +13,6 @@ namespace UMS.Service.Interfaces
         Task<RoleDto> CreateRole(RoleDto Role);
 
         Task<UserRoleDto> AssignRole(UserRoleDto userRole);
+        Task<IEnumerable<RoleDto>> GetAllRoles();
     }
 }

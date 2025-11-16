@@ -15,6 +15,7 @@ namespace UMS.Core.Interfaces
         Task<User?> UpdateUser(User user); 
         Task<User?> DeleteUser(User user);
         Task<User?> GetUserByEmailAsync(string username);
+        Task<User?> GetUserByIdAsync(string id);
         Task<(List<User> users, int totalCount)> GetUsersWithPaginationAsync(UserListRequestDto request);
     }
 }

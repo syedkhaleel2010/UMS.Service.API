@@ -9,7 +9,7 @@ namespace UMS.Core.Dto
 {
     public class UserPasswordResetRequest : IValidatableObject
     {
-        public string OldPassword { get; set; }
+        public string? OldPassword { get; set; }
         
         /// <summary>
         /// 

@@ -60,9 +60,38 @@ public class AuthController : ServiceControllerBase
         return OkServiceResponse(user, Localizer["UserCreatedSuccessfully"].ToString());
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpPost("register-with-roles")]
+    public async Task<IActionResult> RegisterWithRoles([FromBody] RegisterUserWithRolesDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
+        }
+
+        // Check if username already exists
+        var existingUser = await _userService.GetUserByUsernameAsync(request.Username);
+        if (existingUser != null)
+        {
+            return BadRequestResponse(Localizer["UsernameAlreadyExists"].ToString());
+        }
+
+        // Check if email already exists
+        var existingEmail = await _userService.GetUserByEmailAsync(request.Email);
+        if (existingEmail != null)
+        {
+            return BadRequestResponse(Localizer["EmailAlreadyExists"].ToString());
+        }
+
+        // Create user with roles
+        var user = await _userService.CreateUserWithRolesAsync(request);
+
+        return OkServiceResponse(user, Localizer["UserCreatedSuccessfully"].ToString());
+    }
+
     [Authorize(Roles = "Admin,User")]
-    [HttpPut("update-userdetails")]
-    public async Task<IActionResult> UpdateUserDetails([FromBody] UpdateUserDto request)
+    [HttpPut("update-userdetails-with-role")]
+    public async Task<IActionResult> UpdateUserDetailsWithRole([FromBody] UpdateUserWithRoleDto request)
     {
         if (!ModelState.IsValid)
         {
@@ -83,17 +112,34 @@ public class AuthController : ServiceControllerBase
         // Check if user has Admin role
         bool isAdmin = userRoles.Contains("Admin");
 
-        if (isAdmin && request.UserRoleDto is not null && request.UserRoleDto.Count() > 0)
+        if (isAdmin && request.RoleIds is not null && request.RoleIds.Count() > 0)
         {
             var user = await _userService.UpdateUserDetailsWithRoleAsync(request);
             return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
         }
-        else
+        
+        return BadRequestResponse(Localizer["InsufficientPermissions"].ToString());
+
+    }
+
+
+    [Authorize(Roles = "Admin,User")]
+    [HttpPut("update-userdetails")]
+    public async Task<IActionResult> UpdateUserDetails([FromBody] UpdateUserDto request)
+    {
+        if (!ModelState.IsValid)
         {
-            var user = await _userService.UpdateUserDetailsAsync(request);
-            return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
+            return BadRequestResponse(Localizer["PleaseCheckInput"].ToString());
+        }
+        string userName = User.Identity?.Name;
+        if (string.IsNullOrEmpty(userName))
+        {
+            return Unauthorized(new { message = Localizer["AuthenticationRequired"].ToString() });
         }
         
+            var user = await _userService.UpdateUserDetailsAsync(request);
+            return OkServiceResponse(user, Localizer["UserUpdatedSuccessfully"].ToString());
+
     }
 
     [Authorize(Roles = "Admin")]
@@ -165,11 +211,12 @@ public class AuthController : ServiceControllerBase
             Expiration = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes),
             Username = user.Username,
             Email = user.Email,
-            Roles = roles
+            Roles = roles,
+            Id= user.ID
         };
 
         _logger.LogInformation("User logged in successfully: {Username}", user.Username);
-        return Ok(response);
+        return OkServiceResponse(response);
     }
 
     [HttpPost("refresh")]
@@ -229,6 +276,32 @@ public class AuthController : ServiceControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while retrieving users list");
+            return HandleOtherException(ex);
+        }
+    }
+
+    [HttpGet("user/{id}")]
+    [Authorize(Roles = "Admin,User")]
+    public async Task<IActionResult> GetUserById([FromRoute] string id)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequestResponse(Localizer["PleaseCheckInput"]?.ToString() ?? "User ID is required");
+            }
+
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound(Localizer["UserNotFound"]?.ToString() ?? "User not found");
+            }
+
+            return OkServiceResponse(user, Localizer["UserRetrievedSuccessfully"]?.ToString() ?? "User retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving user by ID");
             return HandleOtherException(ex);
         }
     }

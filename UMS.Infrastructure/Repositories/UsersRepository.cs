@@ -33,6 +33,13 @@ namespace UMS.Infrastructure.Repositories
         {
             return await Task.FromResult(dbContext.Users.FirstOrDefault(u => u.Email == email));
         }
+        public async Task<User?> GetUserByIdAsync(string id)
+        {
+            return await Task.FromResult(dbContext.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefault(u => u.ID == id));
+        }
         public async Task<User?> RegisterUser(User user)
         {
             dbContext.Users.Add(user);

@@ -11,5 +11,6 @@ namespace UMS.Core.Interfaces
     {
        Task<Role> CreateRole(Role role);
        Task<UserRole> AssignRole(UserRole userRole);
+        Task<IEnumerable<Role>> GetAllRoles();
     }
 }

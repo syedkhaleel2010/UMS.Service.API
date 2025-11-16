@@ -24,6 +24,12 @@ namespace UMS.Infrastructure.Repositories
             return await Task.FromResult<UserRole>(userRole);
         }
 
+        public async Task<IEnumerable<Role>> GetAllRoles()
+        {
+            var roles = dbContext.Roles.ToList();
+            return await Task.FromResult<IEnumerable<Role>>(roles);
+        }
+
 
     }
     
